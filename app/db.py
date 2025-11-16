@@ -19,4 +19,13 @@ class Post(DeclarativeBase):
     file_name = Column(String, nullable= False)
     created_at = Column(DateTime,default=datetime.utcnow)
 
-    
+    engine = create_async_engine(DATABASE_URL)
+    async_session_maker = async_sessionmaker(engine, expore_on_commit=False)
+
+    async def create_db_and_tables():
+        async with engine.begin() as conn:
+            await conn.run_sync(DeclarativeBase.metadata.create_all)
+
+    async def get_async_session() -> AsyncGenerator[AsyncGenerator, None]:
+        async with async_session_maker() as session:
+            yield session 
